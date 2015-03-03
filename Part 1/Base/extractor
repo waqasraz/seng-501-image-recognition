@@ -1,0 +1,24 @@
+
+java -Xmx2G -jar SequenceFileTool.jar -m CREATE -R -pm -o train.seq train/
+
+hadoop dfs -copyFromLocal train.seq /user/hue/project/
+=====================
+Extract Features
+=====================
+hadoop jar HadoopLocalFeaturesTool.jar --mode DENSE_SIFT -a -i hdfs://172.16.1.128/user/hue/project/train.seq -o hdfs://172.16.1.128/user/hue/project/sift.seq
+
+===================
+Fast Kmean
+===================
+hadoop jar HadoopFastKMeans.jar -i hdfs://172.16.1.128/user/hue/project/sift-bin.seq -k 200 -o hdfs://172.16.1.128/user/hue/project/
+
+====================
+Quantise Descriptor
+===================
+hadoop jar HadoopClusterQuantiserTool.-t BINARY_KEYPOINT -i hdfs://172.16.1.128/user/hue/project/sift-bin.seq -o hdfs://172.16.1.128/user/hue/project/quantised-sift-bin.seq -q hdfs://172.16.1.128/user/hue/project/final
+
+===================
+Sequance File Merger
+===================
+hadoop jar SequenceFileMerger-1.4-SNAPSHOT-jar-with-dependencies.jar -i hdfs://172.16.1.128/user/hue/project/quantised-sift-bin.seq -n 1 -o hdfs://172.16.1.128/user/hue/project/QuantisedSift/
+
