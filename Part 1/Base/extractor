@@ -1,3 +1,7 @@
+==============================
+Steps to get the Desire Output
+==============================
+
 
 java -Xmx2G -jar SequenceFileTool.jar -m CREATE -R -pm -o train.seq train/
 
