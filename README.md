@@ -1,4 +1,4 @@
-# Part 2 - Image Classification #
+# SENG 501 - Image Recognition Project #
 ## Prerequisites ##
 
 - Java
