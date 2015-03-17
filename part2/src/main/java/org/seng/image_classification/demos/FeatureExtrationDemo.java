@@ -88,17 +88,17 @@ public class FeatureExtrationDemo
 	        return spatial.aggregate(pdsift.getByteKeypoints(0.015f), image.getBounds()).normaliseFV();
 	    }
 	}
-	
+
     public static void main( String[] args ) throws IOException
     {	
     	//Read test images (not required)
-    	GroupedDataset<String, VFSListDataset<Record<FImage>>, Record<FImage>> allData = 
+    	GroupedDataset<String, VFSListDataset<Record<FImage>>, Record<FImage>> allData =
     			Caltech101.getData(ImageUtilities.FIMAGE_READER);
-    	
-    	GroupedDataset<String, ListDataset<Record<FImage>>, Record<FImage>> data = 
+
+    	GroupedDataset<String, ListDataset<Record<FImage>>, Record<FImage>> data =
     			GroupSampler.sample(allData, 5, false);
-    	
-    	GroupedRandomSplitter<String, Record<FImage>> splits = 
+
+    	GroupedRandomSplitter<String, Record<FImage>> splits =
     			new GroupedRandomSplitter<String, Record<FImage>>(data, 10, 0, 10);
 
     	DenseSIFT dsift = new DenseSIFT(5, 7);
@@ -106,10 +106,7 @@ public class FeatureExtrationDemo
 
     	HardAssigner<byte[], float[], IntFloatPair> assigner = 
     			trainQuantiser(GroupedUniformRandomisedSampler.sample(splits.getTrainingDataset(), 1), pdsift);
-    	
-    	
-    	
-    	
+
     	//Train image classification
     	FeatureExtractor<DoubleFV, Record<FImage>> extractor = new PHOWExtractor(pdsift, assigner);
     	
