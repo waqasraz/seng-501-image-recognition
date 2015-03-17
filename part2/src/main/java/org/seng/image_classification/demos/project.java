@@ -27,6 +27,7 @@ import org.openimaj.ml.kernel.HomogeneousKernelMap;
 import org.openimaj.util.pair.IntFloatPair;
 
 import org.openimaj.ml.annotation.Annotated;
+import org.seng.image_classification.lookupClass;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,85 +40,36 @@ import java.io.IOException;
  * Created by waqas on 14/03/15.
  */
 public class project {
-    public static final String TRAINING_PATH = "/home/waqas/Documents/Project 501/imagedata/train";
-    public static final String TEST_PATH = "/home/waqas/Documents/Project 501/imagedata/test";
-
     public static final String SEQUENCE_FILE_PATH = "/home/waqas/Data/part-r-00000";
-
-    //Extract bag of visual words feature vector
-    class PHOWExtractor implements FeatureExtractor<DoubleFV, FImage> {
-        PyramidDenseSIFT<FImage> pdsift;
-        HardAssigner<byte[], float[], IntFloatPair> assigner;
-
-        public PHOWExtractor(PyramidDenseSIFT<FImage> pdsift, HardAssigner<byte[], float[], IntFloatPair> assigner)
-        {
-            this.pdsift = pdsift;
-            this.assigner = assigner;
-        }
-
-        public DoubleFV extractFeature(FImage image) {
-
-            //Get sift features of input image
-            pdsift.analyseImage(image);
-
-            //Gag of visual words histogram representation
-            BagOfVisualWords<byte[]> bovw = new BagOfVisualWords<byte[]>(assigner);
-
-            //Bag of visual words for blocks and combine
-            BlockSpatialAggregator<byte[], SparseIntFV> spatial = new BlockSpatialAggregator<byte[], SparseIntFV>(
-                    bovw, 2, 2);
-
-            //Return normalised feature vector
-            return spatial.aggregate(pdsift.getByteKeypoints(0.015f), image.getBounds()).normaliseFV();
-        }
-    }
-
 
     public static void main( String[] args ) throws IOException
     {
-        GroupedDataset<String, VFSListDataset<FImage>, FImage> data_set = new VFSGroupDataset<FImage>(TRAINING_PATH, ImageUtilities.FIMAGE_READER);
-
-        GroupedDataset<String, ListDataset<FImage>, FImage> data = GroupSampler.sample(data_set, data_set.size(), false);
-
-        // Loading test dataset
-        VFSListDataset<FImage> test_Set = new VFSListDataset<FImage>(TEST_PATH, ImageUtilities.FIMAGE_READER);
-
-
         TextBytesSequenceFileUtility  reader = new TextBytesSequenceFileUtility(SEQUENCE_FILE_PATH, true);
 
-        GroupedDataset<Text, ListDataset<SparseIntFV>, SparseIntFV> gds = new MapBackedDataset<Text, ListDataset<SparseIntFV>, SparseIntFV>();
+        final GroupedDataset<String, ListDataset<SparseIntFV>, SparseIntFV> gds = new MapBackedDataset<String, ListDataset<SparseIntFV>, SparseIntFV>();
+        lookupClass lookup = new lookupClass();
 
-        //Map<Text, SparseIntFV> data_new = new HashMap<Text, SparseIntFV>();
+        for (final Map.Entry<Text, BytesWritable> kv : reader) {
+            final MemoryLocalFeatureList<QuantisedKeypoint> features = MemoryLocalFeatureList.read(
+                    new ByteArrayInputStream(kv.getValue().getBytes()), QuantisedKeypoint.class);
 
-        for (Map.Entry<Text, BytesWritable> kv : reader) {
-            MemoryLocalFeatureList<QuantisedKeypoint> features = MemoryLocalFeatureList.read(new ByteArrayInputStream(kv.getValue().getBytes()), QuantisedKeypoint.class);
-            SparseIntFV vector = BagOfVisualWords.extractFeatureFromQuantised(features, 200);
-           // data_new.put(kv.getKey(), vector);
-            //gds.put(kv.getKey(), vector.getVector());
-            System.out.println(kv.getKey().toString());
+            final SparseIntFV vector = BagOfVisualWords.extractFeatureFromQuantised(features, 300);
+
+            final String clz = lookup.get_Class(kv.getKey().toString());
+
+            if (!gds.containsKey(clz))
+                gds.put(clz, new ListBackedDataset<SparseIntFV>());
+            gds.get(clz).add(vector);
         }
-
-        //System.out.println(data_new.entrySet());
-
 
 
         LiblinearAnnotator<SparseIntFV, String> ann;
         //IdentityFeatureExtractor<SparseIntFV> extractor = new IdentityFeatureExtractor<SparseIntFV>();
         //extractor.extractFeature(vector);
-        //ann = new LiblinearAnnotator<SparseIntFV, String>(new IdentityFeatureExtractor<SparseIntFV>(), LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
-
-
-        //HomogeneousKernelMap hkm = new HomogeneousKernelMap(HomogeneousKernelMap.KernelType.Chi2, HomogeneousKernelMap.WindowType.Uniform);
-        //Gist geature extractor
-
-        //FeatureExtractor<SparseIntFV, FImage> extractor = hkm.createWrappedExtractor()
-
-
-        //Classifier for gist features
-        //ann = new LiblinearAnnotator<SparseIntFV, String>(extractor, LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
+        ann = new LiblinearAnnotator<SparseIntFV, String>(new IdentityFeatureExtractor<SparseIntFV>(), LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
 
         System.out.println("Start training");
-        //ann.train(data);
+        ann.train(gds);
         System.out.println("Train done");
 
     }
