@@ -23,8 +23,6 @@ public class GUI extends Frame {
     private Button button_Start;
     private Button button_Quit;
 
-    private int count = 0;     // Counter's value
-
     public GUI(){
         setLayout(new FlowLayout());
 
@@ -71,7 +69,7 @@ public class GUI extends Frame {
         });
 
         setTitle("Image Recognition");
-        setSize(800, 600);
+        setSize(600, 400);
 
         setVisible(true);
     }
@@ -79,10 +77,4 @@ public class GUI extends Frame {
     public static void main(String[] args) {
         GUI app = new GUI();
     }
-/*
-    public void actionPerformed(ActionEvent evt) {
-        ++count;
-        textField_OutPut.setText(count + "");
-    }
-    */
 }
