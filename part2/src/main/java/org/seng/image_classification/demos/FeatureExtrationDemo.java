@@ -114,7 +114,7 @@ public class FeatureExtrationDemo
 	            extractor, Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
 		ann.train(splits.getTrainingDataset());
     	
-		
+
 		
 		//Attempt to classify test images
 		ClassificationEvaluator<CMResult<String>, String, Record<FImage>> eval = 
@@ -123,7 +123,8 @@ public class FeatureExtrationDemo
     	
 		Map<Record<FImage>, ClassificationResult<String>> guesses = eval.evaluate();
 		CMResult<String> result = eval.analyse(guesses);
-		
+
+
 		System.out.println(result);
     }
 }
