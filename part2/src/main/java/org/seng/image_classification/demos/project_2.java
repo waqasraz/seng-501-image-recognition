@@ -70,10 +70,11 @@ public class project_2 {
 
         LiblinearAnnotator<SparseIntFV, String> ann;
 
+
         HomogeneousKernelMap hkm = new HomogeneousKernelMap(HomogeneousKernelMap.KernelType.Chi2, HomogeneousKernelMap.WindowType.Rectangular);
         //IdentityFeatureExtractor<SparseIntFV> extractor = new IdentityFeatureExtractor<SparseIntFV>();
         //extractor.extractFeature(vector);
-        ann = new LiblinearAnnotator<SparseIntFV, String>( hkm.createWrappedExtractor(new IdentityFeatureExtractor<SparseIntFV>()), LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
+        ann = new LiblinearAnnotator<SparseIntFV, String>( hkm.createWrappedExtractor(new IdentityFeatureExtractor<SparseIntFV>()), LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L1LOSS_SVC_DUAL, 1.0, 0.00001);
 
         System.out.println("Start training");
         ann.train(gds);
