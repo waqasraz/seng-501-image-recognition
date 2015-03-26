@@ -12,24 +12,37 @@ import java.io.*;
 import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 
-public class GUI extends Frame {
-    private Label lblCount;
-    private TextField textField_OutPut;
+public class GUI extends JFrame {
+    private JLabel label;
+    private JTextField textField_OutPut;
     private JLabel imgLabel;
     private BufferedImage image;
+    private JLabel statusbar;
+
+    private JFrame GUI_Frame;
+    private JPanel GUI_Panel;
+
+    private JPanel image_Panel;
+    private JPanel results_Panel;
+    private JPanel button_Panel;
+    private JPanel status_Panel;
+
+    private ImageIcon imageIcon;
 
     // Buttons
-    private Button button_Start;
-    private Button button_Quit;
+    private JButton button_Browse;
+    private JButton button_Start;
+    private JButton button_Quit;
 
-    public GUI(){
-        setLayout(new FlowLayout());
+    private JFileChooser fc;
+    private File file;
 
-        image = null;
+    private void switchImage(File imageFile){
         try
         {
-            image = ImageIO.read(new File("test.jpg"));
+            image = ImageIO.read(imageFile);
         }
         catch (Exception e)
         {
@@ -37,29 +50,88 @@ public class GUI extends Frame {
             System.exit(1);
         }
 
-        ImageIcon imageIcon = new ImageIcon(image);
+        // TODO: Aspect Ratio PRESERVATION
+
+        imageIcon = new ImageIcon(image);
+        Image image = imageIcon.getImage();
+        Image newimg = image.getScaledInstance(400, 400,  java.awt.Image.SCALE_SMOOTH);
+        imageIcon = new ImageIcon(newimg);  // transform it back
+        imgLabel.setIcon(imageIcon);
+    }
+
+    public GUI(){
+
+        fc = new JFileChooser();
+
+        // Set up the main GUI
+        GUI_Frame = new JFrame("Image Recognition");
+        GUI_Panel = new JPanel();
+        GUI_Panel.setLayout(new BorderLayout());
+        GUI_Frame.getContentPane().add(GUI_Panel, "Center");
+
+        // Non-image elements
+        results_Panel = new JPanel();
+        results_Panel.setLayout(new FlowLayout());
+        GUI_Panel.add(results_Panel, "North");
+
+        button_Panel = new JPanel();
+        button_Panel.setLayout(new FlowLayout());
+        GUI_Panel.add(button_Panel, "Center");
+
+        status_Panel = new JPanel();
+        status_Panel.setLayout(new FlowLayout());
+        GUI_Panel.add(status_Panel, "South");
+
+
+        // Image Panel
+        image_Panel = new JPanel();
+        image = null;
+
+        //imageIcon = new ImageIcon(image);
+        imageIcon = new ImageIcon();
         imgLabel = new JLabel();
         imgLabel.setIcon(imageIcon);
-        add(imgLabel);
+        image_Panel.add(imgLabel);
+        GUI_Frame.getContentPane().add(image_Panel, "North");
 
-        lblCount = new Label("Output");
-        add(lblCount);
+        statusbar = new JLabel();
+        status_Panel.add(statusbar);
 
-        textField_OutPut = new TextField("", 20);
+        label = new JLabel("Output");
+        results_Panel.add(label);
+
+        textField_OutPut = new JTextField("", 20);
         textField_OutPut.setEditable(false);
-        add(textField_OutPut);
+        results_Panel.add(textField_OutPut);
 
-        button_Start = new Button("Start");
-        add(button_Start);
+        button_Start = new JButton("Start");
+        button_Panel.add(button_Start);
         button_Start.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //Start the program
+                statusbar.setText("Start!");
             }
         });
 
-        button_Quit = new Button("Exit");
-        add(button_Quit);
+        button_Browse = new JButton("Select Image");
+        button_Panel.add(button_Browse);
+        button_Browse.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fc.showOpenDialog(GUI.this);
+
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    file = fc.getSelectedFile();
+                    switchImage(file);
+                } else {
+                    // User canceled
+                }
+            }
+        });
+
+        button_Quit = new JButton("Exit");
+        button_Panel.add(button_Quit);
         button_Quit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -68,10 +140,8 @@ public class GUI extends Frame {
             }
         });
 
-        setTitle("Image Recognition");
-        setSize(600, 400);
-
-        setVisible(true);
+        GUI_Frame.setSize(600, 600);
+        GUI_Frame.setVisible(true);
     }
 
     public static void main(String[] args) {
