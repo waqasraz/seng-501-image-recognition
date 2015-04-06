@@ -2,10 +2,7 @@ package org.seng.image_recognition;
 
 
 import org.apache.commons.lang.ArrayUtils;
-import org.seng.image_recognition.tools.FVExtractorTool;
-import org.seng.image_recognition.tools.KPExtractorTool;
-import org.seng.image_recognition.tools.ResultsAnalyzerTool;
-import org.seng.image_recognition.tools.TrainerTool;
+import org.seng.image_recognition.tools.*;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -33,6 +30,10 @@ public class App {
         else if (tool.toLowerCase().equals("analyzer")) {
             System.out.println("Running analyzer tool...");
             ResultsAnalyzerTool.main(args);
+        }
+        else if (tool.toLowerCase().equals("classifier")) {
+            System.out.println("Running classifier GUI...");
+            ClassifierTool.main(args);
         }
         else {
             System.err.println("Unrecognized tool specified...");
