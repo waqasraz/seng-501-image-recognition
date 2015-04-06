@@ -1,6 +1,7 @@
 package org.seng.image_recognition.core.data;
 
 import org.openimaj.feature.DoubleFV;
+import org.seng.image_recognition.utils.ImageIO;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,9 +41,7 @@ public class LocalFVData extends LocalImageData implements FVData {
         out.write(this.path + " ");
         out.write(this.type + " ");
 
-        for (int i = 0; i < this.features.values.length; i++) {
-            out.print(this.features.values[i] + " ");
-        }
+        ImageIO.writeASCII(this.features, out);
 
         out.println();
     }

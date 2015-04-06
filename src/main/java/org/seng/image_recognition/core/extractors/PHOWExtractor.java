@@ -12,6 +12,11 @@ import org.openimaj.ml.clustering.assignment.HardAssigner;
 import org.openimaj.util.pair.IntFloatPair;
 
 
+/**
+ * Extracts feature vectors using the PHOW technique.
+ *
+ * Adapted from: http://www.openimaj.org/tutorial/classification101.html
+ */
 public class PHOWExtractor implements FeatureExtractor<DoubleFV, ImageProvider<FImage>> {
     AbstractDenseSIFT<FImage> sift;
     HardAssigner<byte[], float[], IntFloatPair> assigner;

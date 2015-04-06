@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import de.bwaldvogel.liblinear.SolverType;
 import org.openimaj.experiment.evaluation.classification.ClassificationEvaluator;
 import org.openimaj.experiment.evaluation.classification.ClassificationResult;
 import org.openimaj.experiment.evaluation.classification.analysers.confusionmatrix.CMAnalyser;
@@ -19,7 +18,6 @@ import org.openimaj.ml.clustering.ByteCentroidsResult;
 import org.openimaj.ml.clustering.assignment.HardAssigner;
 import org.openimaj.util.pair.IntFloatPair;
 import org.seng.image_recognition.core.data.*;
-import org.seng.image_recognition.core.extractors.MockFVDataExtractor;
 import org.seng.image_recognition.utils.BasicGroupedDataset;
 import org.seng.image_recognition.utils.ImageAnalysis;
 
@@ -116,7 +114,7 @@ public class FeatureExtractionDemo {
         ByteCentroidsResult centroids = ImageAnalysis.trainQuantiser(keypoints);
 
         LocalCentroidsData data = new LocalCentroidsData(centroids);
-        data.write("tmp/centroids-100.ser");
+        data.write("tmp/centroids.ser");
     }
 
     /**
@@ -179,29 +177,11 @@ public class FeatureExtractionDemo {
 
         //Train annotator
         System.out.println("Training annotator");
-        BasicGroupedDataset<FVData> trainingDataset = ImageAnalysis.groupFeatures(features);
-        MockFVDataExtractor extractor = new MockFVDataExtractor();
-    	LiblinearAnnotator<FVData, String> ann = new LiblinearAnnotator<FVData, String>(
-                extractor, LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
-		ann.train(trainingDataset);
+    	LiblinearAnnotator<FVData, String> ann = ImageAnalysis.trainAnnotator(features);
 
         //Prepare test data
-        File imageRoot = new File("imagecl/train/");
-        List<FVData> testData = new ArrayList<FVData>();
-        for (File folder : Arrays.asList(imageRoot.listFiles())) {
-            if (folder.isDirectory()) {
-                Iterable<File> files = Arrays.asList(folder.listFiles()).subList(
-                        NUM_TRAINING_IMAGES_PER_CLASS, NUM_TRAINING_IMAGES_PER_CLASS + NUM_TEST_IMAGES_PER_CLASS);
-                for (File file : files) {
-                    System.out.println("Generating test image features");
-
-                    DoubleFV fv = ImageAnalysis.extractFeatures(assigner, ImageUtilities.readF(file));
-
-                    testData.add(new LocalFVData(file.getAbsolutePath(), folder.getName(), fv));
-                }
-            }
-        }
-        BasicGroupedDataset<FVData> testDataset = ImageAnalysis.groupFeatures(testData);
+        BasicGroupedDataset<FVData> testDataset = ImageAnalysis.prepareTestData(
+                "imagecl/train", assigner, NUM_TEST_IMAGES_PER_CLASS, NUM_TRAINING_IMAGES_PER_CLASS);
 
         //Test accuracy rate of annotator
         ClassificationEvaluator<CMResult<String>, String, FVData> eval =
