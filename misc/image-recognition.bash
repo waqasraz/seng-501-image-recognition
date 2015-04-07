@@ -97,7 +97,7 @@ hadoop jar ${LFS_JAR_FILE} kpextractor -dir ${HDFS_TRAIN_DIR}/ -map ${HDFS_TRAIN
 hadoop fs -copyToLocal ${HDFS_RESULTS_DIR}/kpextractor/part-r-00000 ${LFS_RESULTS_DIR}/keypoints.txt
 
 # Perform training task
-java -jar ${LFS_JAR_FILE} trainer -kp ${LFS_RESULTS_DIR}/keypoints.txt -o ${LFS_RESULTS_DIR}/centroids.txt
+java -Xmx2g -jar ${LFS_JAR_FILE} trainer -kp ${LFS_RESULTS_DIR}/keypoints.txt -o ${LFS_RESULTS_DIR}/centroids.txt
 
 ##########################################
 # Feature vector extraction stage
