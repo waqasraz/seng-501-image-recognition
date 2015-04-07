@@ -4,28 +4,48 @@ package org.seng.image_recognition.tools; /**
 
 //package org.seng.image_classification;
 
+import org.openimaj.experiment.evaluation.classification.ClassificationResult;
+import org.openimaj.feature.DoubleFV;
+import org.openimaj.image.FImage;
+import org.openimaj.image.ImageUtilities;
+import org.openimaj.ml.annotation.linear.LiblinearAnnotator;
+import org.openimaj.ml.clustering.assignment.HardAssigner;
+import org.openimaj.util.pair.IntFloatPair;
+import org.seng.image_recognition.core.data.CentroidsData;
+import org.seng.image_recognition.core.data.FVData;
+import org.seng.image_recognition.core.data.LocalFVData;
+import org.seng.image_recognition.utils.ImageAnalysis;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.*;
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
+import java.util.List;
 import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 
 public class ClassifierToolGUI extends JFrame {
+    private final LiblinearAnnotator<FVData, String> annotator;
+    private final HardAssigner<byte[], float[], IntFloatPair> assigner;
+
+
     private JLabel label;
     private JTextField textField_OutPut;
     private JLabel imgLabel;
     private BufferedImage image;
+    private FImage fImage;
     private JLabel statusbar;
 
     private JFrame GUI_Frame;
     private JPanel GUI_Panel;
 
     private JPanel image_Panel;
-    private JPanel results_Panel;
     private JPanel button_Panel;
     private JPanel status_Panel;
 
@@ -33,7 +53,6 @@ public class ClassifierToolGUI extends JFrame {
 
     // Buttons
     private JButton button_Browse;
-    private JButton button_Start;
     private JButton button_Quit;
 
     private JFileChooser fc;
@@ -43,6 +62,17 @@ public class ClassifierToolGUI extends JFrame {
         try
         {
             image = ImageIO.read(imageFile);
+
+            //Classify image
+            fImage = ImageUtilities.createFImage(image);
+            DoubleFV fv = ImageAnalysis.extractFeatures(assigner, fImage);
+            FVData fvdata = new LocalFVData(null, null, fv);
+            ClassificationResult<String> classification = annotator.classify(fvdata);
+            String result = new ArrayList<String>(classification.getPredictedClasses()).get(0);
+
+            //Display result to user
+            NumberFormat formatter = new DecimalFormat("#0.00");
+            statusbar.setText("This image is a " + result + " (" + formatter.format(classification.getConfidence(result)) + "% sure)");
         }
         catch (Exception e)
         {
@@ -59,7 +89,9 @@ public class ClassifierToolGUI extends JFrame {
         imgLabel.setIcon(imageIcon);
     }
 
-    public ClassifierToolGUI(){
+    public ClassifierToolGUI(LiblinearAnnotator<FVData, String> ann, HardAssigner<byte[], float[], IntFloatPair> assigner){
+        this.annotator = ann;
+        this.assigner = assigner;
 
         fc = new JFileChooser();
 
@@ -68,11 +100,6 @@ public class ClassifierToolGUI extends JFrame {
         GUI_Panel = new JPanel();
         GUI_Panel.setLayout(new BorderLayout());
         GUI_Frame.getContentPane().add(GUI_Panel, "Center");
-
-        // Non-image elements
-        results_Panel = new JPanel();
-        results_Panel.setLayout(new FlowLayout());
-        GUI_Panel.add(results_Panel, "North");
 
         button_Panel = new JPanel();
         button_Panel.setLayout(new FlowLayout());
@@ -96,23 +123,6 @@ public class ClassifierToolGUI extends JFrame {
 
         statusbar = new JLabel();
         status_Panel.add(statusbar);
-
-        label = new JLabel("Output");
-        results_Panel.add(label);
-
-        textField_OutPut = new JTextField("", 20);
-        textField_OutPut.setEditable(false);
-        results_Panel.add(textField_OutPut);
-
-        button_Start = new JButton("Start");
-        button_Panel.add(button_Start);
-        button_Start.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //Start the program
-                statusbar.setText("Start!");
-            }
-        });
 
         button_Browse = new JButton("Select Image");
         button_Panel.add(button_Browse);

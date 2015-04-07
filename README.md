@@ -123,3 +123,15 @@ configure the various file paths according to your own setup.
 recognition GUI on.
 
 
+### Classification ###
+
+
+Once *results/centroids.txt* and *results/features.txt* are obtained from the previous steps, you can now use
+the image recognition user interface. To run this program, use the following command:
+
+
+```
+java -jar image-recognition-0.0.1-jar-with-dependencies.jar classifier -fv [path to features.txt] -cen [path to centroids.txt]
+```
+
+
