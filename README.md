@@ -65,6 +65,8 @@ Each stage is performed individually and sequentially. Stages 1-4 create the req
 quickly and effectively, while stage 5 applies the computed data to predict the classification of any
 arbitrary image.
 
+__TIP__: If you want to skip stages 1-4, you can use the sample files found in *misc/samples/*.
+
 ### Pre-requisites ###
 
 In order to perform the image recognition process, you will need the following:
